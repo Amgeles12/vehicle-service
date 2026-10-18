@@ -9,20 +9,8 @@ vehículos: datos técnicos, estado del motor, última ubicación registrada y f
 
 ## Arquitectura
 
-Lugar de este servicio dentro del sistema. El API Composite consulta a `vehicle-service` y a
-`driver-service`; cada microservicio tiene su propia base de datos y el composite no accede a ellas.
-
-```mermaid
-flowchart TD
-    A["Cliente web /<br/>Postman"] --> B["API Composite<br/>:8083"]
-    B -->|"GET /vehicles/{id}"| C["vehicle-service<br/>:8081<br/>(este repositorio)"]
-    B -->|"GET /drivers/by-vehicle/{vehicleId}"| D["driver-service<br/>:8082"]
-    C --> E[("PostgreSQL")]
-    D --> F[("MongoDB")]
-    style C stroke-width:4px
-```
-
-Capas internas de `vehicle-service`:
+Arquitectura por capas de `vehicle-service`. Tiene su propia base de datos PostgreSQL y no depende
+de ningún otro microservicio.
 
 ```mermaid
 flowchart TD
@@ -110,7 +98,7 @@ Arquitectura por capas del microservicio y su relación con el exterior.
 
 ```mermaid
 flowchart LR
-    client["Cliente HTTP<br/>(fleet-composite-service / Postman)"]
+    client["Cliente HTTP<br/>(Postman / otros servicios)"]
 
     subgraph vs["vehicle-service  -  Spring MVC  -  puerto 8081"]
         direction TB
@@ -140,11 +128,11 @@ flowchart LR
     handler -->|"ErrorDto + código HTTP"| client
 ```
 
-### Qué usa el composite de este servicio
+### Contrato para quien consuma este servicio
 
-El composite usa de este servicio los campos `id`, `plate`, `model` y `batteryStatusPercentage`.
-El vínculo entre vehículos y conductores es el `id` del vehículo (por ejemplo `veh-001`), que
-`driver-service` guarda en cada conductor como `vehicleId`.
+Otros servicios consultan `GET /vehicles/{id}` y usan los campos `id`, `plate`, `model` y
+`batteryStatusPercentage`. El `id` del vehículo (por ejemplo `veh-001`) es el identificador que
+otros servicios guardan para relacionarse con un vehículo.
 
 ---
 
